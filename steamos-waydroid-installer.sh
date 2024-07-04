@@ -51,16 +51,6 @@ else
 	exit
 fi
 
-# sanity check - make sure kernel version is supported. exit immediately if not on the supported kernel
-echo Checking if kernel is supported.
-if [ $kernel_version = $kernel1 ] || [ $kernel_version = $kernel2 ] || [ $kernel_version = $kernel3 ] || [ $kernel_version = $kernel4 ] || [ $kernel_version = $kernel5 ]
-then
-	echo $kernel_version is supported. Proceed to next step.
-else
-	echo $kernel_version is NOT supported. Exiting immediately.
-	exit
-fi
-
 # sanity check - make sure sudo password is already set
 if [ "$(passwd --status $(whoami) | tr -s " " | cut -d " " -f 2)" == "P" ]
 then
@@ -118,25 +108,11 @@ else
 	cleanup_exit
 fi
 
-# lets install and enable the binder module so we can start waydroid right away
-lsmod | grep binder &> /dev/null
-if [ $? -eq 1 ]
-then
-	echo binder kernel module not found! Installing binder!
-	echo -e "$current_password\n" | sudo -S cp binder/$kernel_version/binder_linux.ko.zst /lib/modules/$kernel_version && \
-		echo -e "$current_password\n" | sudo -S depmod -a && sudo modprobe binder_linux && \
-		echo -e "$current_password\n" | sudo -S modprobe binder_linux
+# Install the binder package from the SteamFork repo.
+pacman -Q binder_linux-dkms 2>/dev/null || pacman -Syu --noconfirm binder_linux-dkms
 
-	if [ $? -eq 0 ]
-	then
-		echo binder kernel module has been installed!
-	else
-		echo Error installing binder kernel module. Run the script again to install waydroid.
-		cleanup_exit
-	fi
-else
-	echo binder kernel module already loaded! no need to reinstall binder!
-fi
+# lets install and enable the binder module so we can start waydroid right away
+sudo modprobe binder_linux
 
 # ok lets install waydroid and cage
 echo -e "$current_password\n" | sudo -S pacman -U cage/wlroots-0.16.2-1-x86_64.pkg.tar.zst waydroid/dnsmasq-2.89-1-x86_64.pkg.tar.zst \
