@@ -38,5 +38,3 @@ chmod +x steamos-waydroid-installer.sh \
 1. Go to Desktop Mode.
 2. There will be an icon called Waydroid Toolbox on the desktop.
 3. Launch that icon and select UNINSTALL.
-![image](https://github.com/SteamFork/SteamOS-Waydroid-Installer/assets/98122529/afdf9e95-7ccf-4bc8-9400-4b8332c5afe9)
-
