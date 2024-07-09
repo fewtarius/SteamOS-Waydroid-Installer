@@ -126,7 +126,7 @@ cp bin/android_launcher.sh ${ANDROID_HOME}
 
 # custom configs done. lets move them to the correct location
 cp $PWD/bin/waydroid_toolbox.sh ${ANDROID_HOME}
-chmod +x ${ANDROID_HOME}/*.sh
+chmod 0755 ${ANDROID_HOME}/*.sh
 cat <<EOF >${HOME}/Desktop/"Waydroid Toolbox.desktop"
 [Desktop Entry]
 Type=Application
