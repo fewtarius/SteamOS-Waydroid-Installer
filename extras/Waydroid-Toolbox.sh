@@ -1,16 +1,8 @@
 #!/bin/bash
-PASSWORD=$(zenity --password --title "sudo Password Authentication")
-echo $PASSWORD | sudo -S ls &> /dev/null
-if [ $? -ne 0 ]
-then
-	echo sudo password is wrong! | \
-		zenity --text-info --title "Clover Toolbox" --width 400 --height 200
-	exit
-fi
-
 while true
 do
-Choice=$(zenity --width 850 --height 350 --list --radiolist --multiple 	--title "Waydroid Toolbox for SteamOS Waydroid script  - https://github.com/ryanrudolfoba/steamos-waydroid-installer"\
+Choice=$(zenity --list --radiolist --multiple --title "Waydroid Toolbox"\
+	--height=640 --width=800 \
 	--column "Select One" \
 	--column "Option" \
 	--column="Description - Read this carefully!"\
@@ -19,7 +11,7 @@ Choice=$(zenity --width 850 --height 350 --list --radiolist --multiple 	--title 
 	FALSE SERVICE "Start or Stop the Waydroid container service."\
 	FALSE GPU "Change the GPU config - GBM or MINIGBM."\
 	FALSE LIBNDK "Configure the ARM translation layer to use - LIBNDK or LIBNDK-FIXER."\
-	FALSE LAUNCHER "Add Android Waydroid Cage launcher to Game Mode."\
+	FALSE LAUNCHER "Add Waydroid launcher to Game Mode."\
 	FALSE UNINSTALL "Choose this to uninstall Waydroid and revert any changes made."\
 	TRUE EXIT "***** Exit the Waydroid Toolbox *****")
 
@@ -30,7 +22,7 @@ then
 
 elif [ "$Choice" == "ADBLOCK" ]
 then
-ADBLOCK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple --title "Waydroid Toolbox" --column "Select One" \
+ADBLOCK_Choice=$(zenity --list --radiolist --multiple --title "Waydroid Toolbox" --column "Select One" \
 	--column "Option" --column="Description - Read this carefully!"\
 	FALSE DISABLE "Disable the custom adblock hosts file."\
 	FALSE UPDATE "Update and enable the custom adblock hosts file."\
@@ -43,15 +35,15 @@ ADBLOCK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple -
 	elif [ "$ADBLOCK_Choice" == "DISABLE" ]
 	then
 		# Disable the custom adblock hosts file
-		echo -e $PASSWORD\n | sudo -S mv /var/lib/waydroid/overlay/system/etc/hosts /var/lib/waydroid/overlay/system/etc/hosts.disable &> /dev/null
+		sudo -S mv /var/lib/waydroid/overlay/system/etc/hosts /var/lib/waydroid/overlay/system/etc/hosts.disable &> /dev/null
 
 		zenity --warning --title "Waydroid Toolbox" --text "Custom adblock hosts file has been disabled!" --width 350 --height 75
 
 	elif [ "$ADBLOCK_Choice" == "UPDATE" ]
 	then
 		# get the latest custom adblock hosts file from steven black github
-		echo -e $PASSWORD\n | sudo -S rm /var/lib/waydroid/overlay/system/etc/hosts.disable &> /dev/null
-		echo -e $PASSWORD\n | sudo -S wget https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts \
+		sudo -S rm /var/lib/waydroid/overlay/system/etc/hosts.disable &> /dev/null
+		sudo -S wget https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts \
 		       -O /var/lib/waydroid/overlay/system/etc/hosts	
 
 		zenity --warning --title "Waydroid Toolbox" --text "Custom adblock hosts file has been updated!" --width 350 --height 75
@@ -59,7 +51,7 @@ ADBLOCK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple -
 
 elif [ "$Choice" == "LIBNDK" ]
 then
-LIBNDK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
+LIBNDK_Choice=$(zenity --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
 	FALSE LIBNDK "Use the original LIBNDK."\
 	FALSE LIBNDK-FIXER "Use LIBNDK-FIXER for Roblox."\
 	TRUE MENU "***** Go back to Waydroid Toolbox Main Menu *****")
@@ -70,7 +62,7 @@ LIBNDK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	-
 	elif [ "$LIBNDK_Choice" == "LIBNDK" ]
 	then
 		# Edit waydroid prop file to use the original libndk_translation.so
-		echo -e $PASSWORD\n | sudo -S sed -i "s/ro.dalvik.vm.native.bridge=.*/ro.dalvik.vm.native.bridge=libndk_translation.so/g" \
+		sudo -S sed -i "s/ro.dalvik.vm.native.bridge=.*/ro.dalvik.vm.native.bridge=libndk_translation.so/g" \
 			/var/lib/waydroid/waydroid_base.prop 
 
 		zenity --warning --title "Waydroid Toolbox" --text "libndk_translation.so is now in use!" --width 350 --height 75
@@ -78,7 +70,7 @@ LIBNDK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	-
 	elif [ "$LIBNDK_Choice" == "LIBNDK-FIXER" ]
 	then
 		# Edit waydroid prop file to use the libndk_fixer.so
-		echo -e $PASSWORD\n | sudo -S sed -i "s/ro.dalvik.vm.native.bridge=.*/ro.dalvik.vm.native.bridge=libndk_fixer.so/g" \
+		sudo -S sed -i "s/ro.dalvik.vm.native.bridge=.*/ro.dalvik.vm.native.bridge=libndk_fixer.so/g" \
 			/var/lib/waydroid/waydroid_base.prop
 
 		zenity --warning --title "Waydroid Toolbox" --text "libndk_fixer.so is now in use! \nYou can now play Roblox!" --width 350 --height 75
@@ -86,7 +78,7 @@ LIBNDK_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	-
 
 elif [ "$Choice" == "GPU" ]
 then
-GPU_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
+GPU_Choice=$(zenity --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
 	FALSE GBM "Use gbm config for GPU."\
 	FALSE MINIGBM "Use minigbm_gbm_mesa for GPU (default)."\
 	TRUE MENU "***** Go back to Waydroid Toolbox Main Menu *****")
@@ -97,7 +89,7 @@ GPU_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--ti
 	elif [ "$GPU_Choice" == "GBM" ]
 	then
 		# Edit waydroid prop file to use gbm
-		echo -e $PASSWORD\n | sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=gbm/g" \
+		sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=gbm/g" \
 			/var/lib/waydroid/waydroid_base.prop 
 
 		zenity --warning --title "Waydroid Toolbox" --text "gbm is now in use!" --width 350 --height 75
@@ -105,7 +97,7 @@ GPU_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--ti
 	elif [ "$GPU_Choice" == "MINIGBM" ]
 	then
 		# Edit waydroid prop file to use minigbm_gbm_mesa
-		echo -e $PASSWORD\n | sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" \
+		sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" \
 			/var/lib/waydroid/waydroid_base.prop
 
 		zenity --warning --title "Waydroid Toolbox" --text "minigbm_gbm_mesa is now in use!" --width 350 --height 75
@@ -113,7 +105,7 @@ GPU_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--ti
 
 elif [ "$Choice" == "AUDIO" ]
 then
-AUDIO_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
+AUDIO_Choice=$(zenity --list --radiolist --multiple 	--title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
 	FALSE DISABLE "Disable the custom audio config."\
 	FALSE ENABLE "Enable the custom audio config to lower audio latency."\
 	TRUE MENU "***** Go back to Waydroid Toolbox Main Menu *****")
@@ -124,7 +116,7 @@ AUDIO_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--
 	elif [ "$AUDIO_Choice" == "DISABLE" ]
 	then
 		# Disable the custom audio config
-		echo -e $PASSWORD\n | sudo -S mv /var/lib/waydroid/overlay/system/etc/init/audio.rc \
+		sudo -S mv /var/lib/waydroid/overlay/system/etc/init/audio.rc \
 		       	/var/lib/waydroid/overlay/system/etc/init/audio.rc.disable &> /dev/null
 
 		zenity --warning --title "Waydroid Toolbox" --text "Custom audio config has been disabled!" --width 350 --height 75
@@ -132,7 +124,7 @@ AUDIO_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--
 	elif [ "$AUDIO_Choice" == "ENABLE" ]
 	then
 		# Enable the custom audio config
-		echo -e $PASSWORD\n | sudo -S mv /var/lib/waydroid/overlay/system/etc/init/audio.rc.disable \
+		sudo -S mv /var/lib/waydroid/overlay/system/etc/init/audio.rc.disable \
 		       	/var/lib/waydroid/overlay/system/etc/init/audio.rc &> /dev/null
 
 		zenity --warning --title "Waydroid Toolbox" --text "Custom audio config has been enabled!" --width 350 --height 75
@@ -140,7 +132,7 @@ AUDIO_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple 	--
 
 elif [ "$Choice" == "SERVICE" ]
 then
-SERVICE_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple --title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
+SERVICE_Choice=$(zenity --list --radiolist --multiple --title "Waydroid Toolbox" --column "Select One" --column "Option" --column="Description - Read this carefully!"\
 	FALSE START "Start the Waydroid container service."\
 	FALSE STOP "Stop the Waydroid container service."\
 	TRUE MENU "***** Go back to Waydroid Toolbox Main Menu *****")
@@ -151,7 +143,7 @@ SERVICE_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple -
 	elif [ "$SERVICE_Choice" == "START" ]
 	then
 		# start the waydroid container service
-		echo -e $PASSWORD\n | sudo -S waydroid-container-start
+		sudo -S waydroid-container-start
 		waydroid session start &
 		sleep 5
 
@@ -161,7 +153,7 @@ SERVICE_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple -
 	then
 		# stop the waydroid container service
 		waydroid session stop
-		echo -e $PASSWORD\n | sudo -S waydroid-container-stop
+		sudo -S waydroid-container-stop
 		pkill kwallet
 
 		zenity --warning --title "Waydroid Toolbox" --text "Waydroid container service has been stopped!" --width 350 --height 75
@@ -169,29 +161,28 @@ SERVICE_Choice=$(zenity --width 600 --height 220 --list --radiolist --multiple -
 
 elif [ "$Choice" == "LAUNCHER" ]
 then
-	steamos-add-to-steam /home/deck/Android_Waydroid/Android_Waydroid_Cage.sh
-	sleep 5
-	zenity --warning --title "Waydroid Toolbox" --text "Android Waydroid Cage launcher has been added to Game Mode!" --width 450 --height 75
+	steamos-add-to-steam ${HOME}/Applications/Waydroid.desktop
+	zenity --warning --title "Waydroid Toolbox" --text "Waydroid launcher has been added to Game Mode!" --width 450 --height 75
 
 elif [ "$Choice" == "UNINSTALL" ]
 then
 	# disable the steamos readonly
-	echo -e $PASSWORD\n | sudo -S steamos-readonly disable
+	sudo -S steamos-readonly disable
 	
 	# remove the kernel module and packages installed
-	echo -e $PASSWORD\n | sudo -S systemctl stop waydroid-container
-	echo -e $PASSWORD\n | sudo -S rm /lib/modules/$(uname -r)/binder_linux.ko.zst
-	echo -e $PASSWORD\n | sudo -S pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc
+	sudo -S systemctl stop waydroid-container
+	sudo -S rm /lib/modules/$(uname -r)/binder_linux.ko.zst
+	sudo -S pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc
 	
 	# delete the waydroid directories and config
-	echo -e $PASSWORD\n | sudo -S rm -rf ~/waydroid /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid* ~/AUR
+	sudo -S rm -rf ~/waydroid /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid* ~/AUR
 	
 	# delete waydroid config and scripts
-	echo -e $PASSWORD\n | sudo -S rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid-fix-controllers \
+	sudo -S rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid-fix-controllers \
 		/usr/bin/waydroid-container-stop /usr/bin/waydroid-container-start
 	
 	# delete cage binaries
-	echo -e $PASSWORD\n | sudo -S rm /usr/bin/cage /usr/bin/wlr-randr
+	sudo -S rm /usr/bin/cage /usr/bin/wlr-randr
 
 	# delete Waydroid Toolbox symlink
 	rm ~/Desktop/Waydroid-Toolbox
@@ -200,10 +191,10 @@ then
 	rm -rf ~/Android_Waydroid/
 	
 	# re-enable the steamos readonly
-	echo -e $PASSWORD\n | sudo -S steamos-readonly enable
+	sudo -S steamos-readonly enable
 	
 	zenity --warning --title "Waydroid Toolbox" --text "Waydroid has been uninstalled! Goodbye!" --width 600 --height 75
 	exit
 fi
 done
-echo -e $PASSWORD\n | sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" /var/lib/waydroid/waydroid_base.prop
+sudo -S sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" /var/lib/waydroid/waydroid_base.prop

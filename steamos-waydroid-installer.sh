@@ -155,7 +155,17 @@ EOF
 # custom configs done. lets move them to the correct location
 cp $PWD/extras/Waydroid-Toolbox.sh ${HOME}/Android_Waydroid
 chmod +x ${HOME}/Android_Waydroid/*.sh
-ln -s ${HOME}/Android_Waydroid/Waydroid-Toolbox.sh ${HOME}/Desktop/Waydroid-Toolbox &> /dev/null
+cat <<EOF >${HOME}/Desktop/"Waydroid Toolbox.desktop"
+[Desktop Entry]
+Type=Application
+Name=Waydroid
+Exec=${HOME}/Android_Waydroid/Waydroid-Toolbox.sh
+Icon=waydroid
+Categories=X-WayDroid-App;
+X-Purism-FormFactor=Workstation;Mobile;
+
+EOF
+chmod 0755 ${HOME}/Desktop/"Waydroid Toolbox.desktop"
 
 # place custom overlay files here - key layout, hosts, audio.rc etc etc
 # copy fixed key layout for Steam Controller
