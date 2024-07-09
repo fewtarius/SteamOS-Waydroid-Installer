@@ -8,6 +8,7 @@ https://github.com/SteamFork/SteamOS-Waydroid-Installer
 
 EOF
 
+ANDROID_HOME="${HOME}/.waydroid"
 AUR_CASUALSNEK=https://github.com/casualsnek/waydroid_script.git
 AUR_CASUALSNEK2=https://github.com/ryanrudolfoba/waydroid_script.git
 DIR_CASUALSNEK=${HOME}/AUR/waydroid/waydroid_script
@@ -27,7 +28,7 @@ cleanup_exit () {
 	sudo rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid* &> /dev/null
 	# delete cage binaries
 	sudo rm /usr/bin/cage /usr/bin/wlr-randr &> /dev/null
-	sudo rm -rf ${HOME}/Android_Waydroid &> /dev/null
+	sudo rm -rf ${ANDROID_HOME} &> /dev/null
 	sudo steamos-readonly enable &> /dev/null
 	echo Cleanup completed.
 	exit
@@ -93,7 +94,7 @@ else
 fi
 
 # lets install the custom config files
-mkdir ${HOME}/Android_Waydroid &> /dev/null
+mkdir ${ANDROID_HOME} &> /dev/null
 
 # waydroid start service
 sudo tee /usr/bin/waydroid-container-start > /dev/null <<'EOF'
@@ -121,45 +122,16 @@ waydroid shell sh /system/etc/nodataperm.sh
 EOF
 sudo chmod +x /usr/bin/waydroid-fix-controllers
 
-# waydroid launcher - cage
-cat > ${HOME}/Android_Waydroid/Android_Waydroid_Cage.sh << EOF
-#!/bin/bash
-
-export shortcut=\$1
-
-killall -9 cage &> /dev/null
-sudo /usr/bin/waydroid-container-stop
-sudo /usr/bin/waydroid-container-start
-
-# Check if non Steam shortcut has the game / app as the launch option
-if [ -z "\$1" ]
-	then
-		# launch option not provided. launch Waydroid via cage and show the full ui right away
-		cage -- bash -c 'wlr-randr --output X11-1 --custom-mode 1280x800@60Hz ;	\\
-			/usr/bin/waydroid show-full-ui \$@ & \\
-			sleep 15 ; \\
-			sudo /usr/bin/waydroid-fix-controllers '
-	else
-		# launch option provided. launch Waydroid via cage but do not show full ui yet
-		cage -- bash -c 'wlr-randr --output X11-1 --custom-mode 1280x800@60Hz ; \\
-			/usr/bin/waydroid session start \$@ & \\
-			sleep 15 ; \\
-			sudo /usr/bin/waydroid-fix-controllers ; \\
-
-			# launch the android app provided from the launch option
-			# sleep 10 ; \\
-			/usr/bin/waydroid app launch \$shortcut  &'
-fi
-EOF
+cp bin/android_launcher.sh ${ANDROID_HOME}
 
 # custom configs done. lets move them to the correct location
-cp $PWD/extras/Waydroid-Toolbox.sh ${HOME}/Android_Waydroid
-chmod +x ${HOME}/Android_Waydroid/*.sh
+cp $PWD/bin/waydroid_toolbox.sh ${ANDROID_HOME}
+chmod +x ${ANDROID_HOME}/*.sh
 cat <<EOF >${HOME}/Desktop/"Waydroid Toolbox.desktop"
 [Desktop Entry]
 Type=Application
 Name=Waydroid Toolbox
-Exec=${HOME}/Android_Waydroid/Waydroid-Toolbox.sh
+Exec=${ANDROID_HOME}/waydroid_toolbox.sh
 Icon=waydroid
 Categories=X-WayDroid-App;
 X-Purism-FormFactor=Workstation;Mobile;
@@ -280,7 +252,7 @@ EOF
 [Desktop Entry]
 Type=Application
 Name=Waydroid
-Exec=${HOME}/Android_Waydroid/Android_Waydroid_Cage.sh
+Exec=${ANDROID_HOME}/android_launcher.sh
 Icon=waydroid
 Categories=X-WayDroid-App;
 X-Purism-FormFactor=Workstation;Mobile;

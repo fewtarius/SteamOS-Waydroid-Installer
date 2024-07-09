@@ -6,14 +6,6 @@ A collection of tools that is packaged into an easy to use script that is stream
 * [waydroid_script](https://github.com/casualsnek/waydroid_script) to easily add the libndk ARM translation layer and widevine.
 * [libndk-fixer](https://github.com/Slappy826/libndk-fixer) is a fixed / improved libndk translation layer specific for Roblox [(demo guide here)](https://youtu.be/-czisFuKoTM?si=8EPXyzasi3no70Tl).
 
-# Disclaimer
-1. Do this at your own risk!
-2. This is for educational and research purposes only!
-
-<p align="center">
-<a href="https://youtu.be/06T-h-jPVx8?si=pTWAlmcYyk9fHa38"> <img src="https://github.com/SteamFork/SteamOS-Waydroid-Installer/blob/main/android.webp"/> </a>
-</p>
-
 ## Installation Steps
 1. Go into Desktop Mode and open `konsole`.
 2. Clone the github repo.
@@ -24,17 +16,18 @@ git clone https://github.com/SteamFork/steamos-waydroid-installer
 3. Execute the script!
 ```
 cd ~/steamos-waydroid-installer \
-chmod +x steamos-waydroid-installer.sh \
-./steamos-waydroid-installer.sh
+chmod +x installer.sh \
+./installer.sh
 ```
 4. Script will automatically install Waydroid together and a custom config. Please be patient as this may take a few minutes.
 5. Once done close `konsole` and re-enter Game Mode.
 
 ## Launching Waydroid
 1. Go to Game Mode.
-2. Run the Android_Waydroid_Cage launcher.
+2. Use the Steam Grid Manager Decky plugin to decorate the launcher if desired.
+3. Run the Waydroid launcher.
 
 ## I dont want this anymore! I want to uninstall!
 1. Go to Desktop Mode.
-2. There will be an icon called Waydroid Toolbox on the desktop.
-3. Launch that icon and select UNINSTALL.
+2. Launch Waydroid Toolbox (from the desktop).
+3. Select UNINSTALL.

@@ -1,4 +1,6 @@
 #!/bin/bash
+ANDROID_HOME="${HOME}/.waydroid"
+
 while true
 do
 Choice=$(zenity --list --radiolist --multiple --title "Waydroid Toolbox"\
@@ -188,8 +190,8 @@ then
 	rm ${HOME}/Desktop/"Waydroid Toolbox.desktop"
 	rm ${HOME}/Applications/Waydroid.desktop
 	
-	# delete contents of ${HOME}/Android_Waydroid
-	rm -rf ${HOME}/Android_Waydroid/
+	# delete contents of ${ANDROID_HOME}
+	rm -rf ${ANDROID_HOME}/
 	
 	# re-enable the steamos readonly
 	sudo -S steamos-readonly enable
