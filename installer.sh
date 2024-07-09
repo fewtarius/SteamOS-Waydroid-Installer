@@ -45,9 +45,13 @@ else
 	exit
 fi
 
-# sanity checks are all good. lets go!
-# create AUR directory where casualsnek script will be saved
-mkdir -p ${HOME}/AUR/waydroid &> /dev/null
+for DIR in "${ANDROID_HOME}" "${HOME}/AUR/waydroid" "${HOME}/Applications"
+do
+	if [ ! -d "${DIR}" ]
+	then
+		mkdir -p "${DIR}"
+	fi
+done
 
 # perform git clone but lets cleanup first in case the directory is not empty
 sudo rm -rf ${HOME}/AUR/waydroid*  &> /dev/null && git clone $AUR_CASUALSNEK $DIR_CASUALSNEK &> /dev/null
@@ -92,9 +96,6 @@ else
 	echo Error installing waydroid and cage. Run the script again to install waydroid.
 	cleanup_exit
 fi
-
-# lets install the custom config files
-mkdir ${ANDROID_HOME} &> /dev/null
 
 # waydroid start service
 sudo tee /usr/bin/waydroid-container-start > /dev/null <<'EOF'
