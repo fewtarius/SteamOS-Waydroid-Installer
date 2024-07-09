@@ -82,7 +82,7 @@ else
 	cleanup_exit
 fi
 
-sudo pacman -Sy --noconfirm wlroots weston wlr-randr cage waydroid
+sudo pacman -Sy --noconfirm fbset wlroots weston wlr-randr cage waydroid
 
 if [ $? -eq 0 ]
 then
