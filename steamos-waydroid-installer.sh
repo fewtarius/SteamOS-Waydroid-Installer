@@ -158,7 +158,7 @@ chmod +x ${HOME}/Android_Waydroid/*.sh
 cat <<EOF >${HOME}/Desktop/"Waydroid Toolbox.desktop"
 [Desktop Entry]
 Type=Application
-Name=Waydroid
+Name=Waydroid Toolbox
 Exec=${HOME}/Android_Waydroid/Waydroid-Toolbox.sh
 Icon=waydroid
 Categories=X-WayDroid-App;
