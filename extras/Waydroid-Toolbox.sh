@@ -175,7 +175,7 @@ then
 	sudo -S pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc
 	
 	# delete the waydroid directories and config
-	sudo -S rm -rf ~/waydroid /var/lib/waydroid ~/.local/share/waydroid ~/.local/share/applications/waydroid* ~/AUR
+	sudo -S rm -rf ${HOME}/waydroid /var/lib/waydroid ${HOME}/.local/share/waydroid ${HOME}/.local/share/applications/waydroid* ${HOME}/AUR
 	
 	# delete waydroid config and scripts
 	sudo -S rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid-fix-controllers \
@@ -184,11 +184,12 @@ then
 	# delete cage binaries
 	sudo -S rm /usr/bin/cage /usr/bin/wlr-randr
 
-	# delete Waydroid Toolbox symlink
-	rm ~/Desktop/Waydroid-Toolbox
+	# delete Waydroid Toolbox launcher
+	rm ${HOME}/Desktop/"Waydroid Toolbox.desktop"
+	rm ${HOME}/Applications/Waydroid.desktop
 	
-	# delete contents of ~/Android_Waydroid
-	rm -rf ~/Android_Waydroid/
+	# delete contents of ${HOME}/Android_Waydroid
+	rm -rf ${HOME}/Android_Waydroid/
 	
 	# re-enable the steamos readonly
 	sudo -S steamos-readonly enable
