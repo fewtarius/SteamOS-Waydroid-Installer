@@ -10,7 +10,7 @@ EOF
 
 AUR_CASUALSNEK=https://github.com/casualsnek/waydroid_script.git
 AUR_CASUALSNEK2=https://github.com/ryanrudolfoba/waydroid_script.git
-DIR_CASUALSNEK=~/AUR/waydroid/waydroid_scrip
+DIR_CASUALSNEK=${HOME}/AUR/waydroid/waydroid_script
 STEAMOS_VERSION=$(grep VERSION_ID /etc/os-release | cut -d "=" -f 2)
 
 
@@ -22,14 +22,14 @@ cleanup_exit () {
 	# remove installed packages
 	sudo pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc &> /dev/null
 	# delete the waydroid directories
-	sudo rm -rf ~/waydroid /var/lib/waydroid ~/AUR &> /dev/null
+	sudo rm -rf ${HOME}/waydroid /var/lib/waydroid ${HOME}/AUR &> /dev/null
 	# delete waydroid config and scripts
 	sudo rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid* &> /dev/null
 	# delete cage binaries
 	sudo rm /usr/bin/cage /usr/bin/wlr-randr &> /dev/null
-	sudo rm -rf ~/Android_Waydroid &> /dev/null
+	sudo rm -rf ${HOME}/Android_Waydroid &> /dev/null
 	sudo steamos-readonly enable &> /dev/null
-	echo Cleanup completed. Please open an issue on the GitHub repo or leave a comment on the YT channel - 10MinuteSteamDeckGamer.
+	echo Cleanup completed.
 	exit
 }
 
@@ -46,17 +46,17 @@ fi
 
 # sanity checks are all good. lets go!
 # create AUR directory where casualsnek script will be saved
-mkdir -p ~/AUR/waydroid &> /dev/null
+mkdir -p ${HOME}/AUR/waydroid &> /dev/null
 
 # perform git clone but lets cleanup first in case the directory is not empty
-sudo rm -rf ~/AUR/waydroid*  &> /dev/null && git clone $AUR_CASUALSNEK $DIR_CASUALSNEK &> /dev/null
+sudo rm -rf ${HOME}/AUR/waydroid*  &> /dev/null && git clone $AUR_CASUALSNEK $DIR_CASUALSNEK &> /dev/null
 
 if [ $? -eq 0 ]
 then
 	echo Casualsnek repo has been successfully cloned!
 else
 	echo Error cloning Casualsnek repo! Trying to clone again using backup repo.
-	sudo rm -rf ~/AUR/waydroid*  &> /dev/null && git clone $AUR_CASUALSNEK2 $DIR_CASUALSNEK &> /dev/null
+	sudo rm -rf ${HOME}/AUR/waydroid*  &> /dev/null && git clone $AUR_CASUALSNEK2 $DIR_CASUALSNEK &> /dev/null
 
 	if [ $? -eq 0 ]
 	then
@@ -96,7 +96,7 @@ else
 fi
 
 # lets install the custom config files
-mkdir ~/Android_Waydroid &> /dev/null
+mkdir ${HOME}/Android_Waydroid &> /dev/null
 
 # waydroid start service
 sudo tee /usr/bin/waydroid-container-start > /dev/null <<'EOF'
@@ -125,7 +125,7 @@ EOF
 sudo chmod +x /usr/bin/waydroid-fix-controllers
 
 # waydroid launcher - cage
-cat > ~/Android_Waydroid/Android_Waydroid_Cage.sh << EOF
+cat > ${HOME}/Android_Waydroid/Android_Waydroid_Cage.sh << EOF
 #!/bin/bash
 
 export shortcut=\$1
@@ -156,9 +156,9 @@ fi
 EOF
 
 # custom configs done. lets move them to the correct location
-cp $PWD/extras/Waydroid-Toolbox.sh ~/Android_Waydroid
-chmod +x ~/Android_Waydroid/*.sh
-ln -s ~/Android_Waydroid/Waydroid-Toolbox.sh ~/Desktop/Waydroid-Toolbox &> /dev/null
+cp $PWD/extras/Waydroid-Toolbox.sh ${HOME}/Android_Waydroid
+chmod +x ${HOME}/Android_Waydroid/*.sh
+ln -s ${HOME}/Android_Waydroid/Waydroid-Toolbox.sh ${HOME}/Desktop/Waydroid-Toolbox &> /dev/null
 
 # lets copy cage and wlr-randr to the correct folder
 sudo cp cage/cage cage/wlr-randr /usr/bin
@@ -198,10 +198,10 @@ else
 	echo Config file missing. Lets configure waydroid.
 
 	# lets initialize waydroid
-	mkdir -p ~/waydroid/{images,cache_http}
+	mkdir -p ${HOME}/waydroid/{images,cache_http}
 	sudo mkdir /var/lib/waydroid &> /dev/null
-	sudo ln -s ~/waydroid/images /var/lib/waydroid/images &> /dev/null
-	sudo ln -s ~/waydroid/cache_http /var/lib/waydroid/cache_http &> /dev/null
+	sudo ln -s ${HOME}/waydroid/images /var/lib/waydroid/images &> /dev/null
+	sudo ln -s ${HOME}/waydroid/cache_http /var/lib/waydroid/cache_http &> /dev/null
 	sudo waydroid init -s GAPPS
 
  	# check if waydroid initialization completed without errors
@@ -226,14 +226,14 @@ else
 	sudo firewall-cmd --runtime-to-permanent &> /dev/null
 
 	# casualsnek script
-	cd ~/AUR/waydroid/waydroid_script
+	cd ${DIR_CASUALSNEK}
 	python3 -m venv venv
 	venv/bin/pip install -r requirements.txt &> /dev/null
 	sudo venv/bin/python3 main.py install {libndk,widevine}
 	if [ $? -eq 0 ]
 	then
 		echo Casualsnek script done.
-		sudo rm -rf ~/AUR
+		sudo rm -rf ${HOME}/AUR
 	else
 		echo Error with casualsnek script. Run the script again.
 		cleanup_exit
@@ -294,5 +294,5 @@ EOF
 fi
 
 # change GPU rendering to use minigbm_gbm_mesa
-echo -e $PASSWORD\n | sudo sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" /var/lib/waydroid/waydroid_base.prop
+sudo sed -i "s/ro.hardware.gralloc=.*/ro.hardware.gralloc=minigbm_gbm_mesa/g" /var/lib/waydroid/waydroid_base.prop
 
