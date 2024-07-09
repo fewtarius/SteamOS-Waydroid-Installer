@@ -81,10 +81,7 @@ else
 	cleanup_exit
 fi
 
-# ok lets install waydroid and cage
-sudo pacman -U cage/wlroots-0.16.2-1-x86_64.pkg.tar.zst waydroid/dnsmasq-2.89-1-x86_64.pkg.tar.zst \
-	waydroid/lxc-1\:5.0.2-1-x86_64.pkg.tar.zst waydroid/libglibutil-1.0.74-1-x86_64.pkg.tar.zst waydroid/libgbinder-1.1.35-1-x86_64.pkg.tar.zst \
-	waydroid/python-gbinder-1.1.2-1-x86_64.pkg.tar.zst waydroid/waydroid-1.4.2-1-any.pkg.tar.zst --noconfirm --overwrite "*" &> /dev/null
+sudo pacman -Sy --noconfirm wlroots weston wlr-randr cage waydroid
 
 if [ $? -eq 0 ]
 then
@@ -159,10 +156,6 @@ EOF
 cp $PWD/extras/Waydroid-Toolbox.sh ${HOME}/Android_Waydroid
 chmod +x ${HOME}/Android_Waydroid/*.sh
 ln -s ${HOME}/Android_Waydroid/Waydroid-Toolbox.sh ${HOME}/Desktop/Waydroid-Toolbox &> /dev/null
-
-# lets copy cage and wlr-randr to the correct folder
-sudo cp cage/cage cage/wlr-randr /usr/bin
-sudo chmod +x /usr/bin/cage /usr/bin/wlr-randr
 
 # place custom overlay files here - key layout, hosts, audio.rc etc etc
 # copy fixed key layout for Steam Controller
