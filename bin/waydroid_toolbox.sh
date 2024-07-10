@@ -192,7 +192,10 @@ then
 	
 	# delete contents of ${ANDROID_HOME}
 	rm -rf ${ANDROID_HOME}/
-	
+
+	# delete post-update hook
+	sudo rm -f /etc/post-update.d/waydroid-post-update.sh
+
 	# re-enable the steamos readonly
 	sudo -S steamos-readonly enable
 	

@@ -86,7 +86,7 @@ else
 	cleanup_exit
 fi
 
-sudo pacman -Sy --noconfirm fbset wlroots weston wlr-randr cage waydroid
+sudo pacman -Sy --noconfirm --overwrite '*' fbset wlroots weston wlr-randr cage waydroid
 
 if [ $? -eq 0 ]
 then
@@ -144,6 +144,13 @@ chmod 0755 ${HOME}/Desktop/"Waydroid Toolbox.desktop"
 # copy fixed key layout for Steam Controller
 sudo mkdir -p /var/lib/waydroid/overlay/system/usr/keylayout
 sudo cp extras/Vendor_28de_Product_11ff.kl /var/lib/waydroid/overlay/system/usr/keylayout/
+
+if [ ! -d "/etc/post-update.d" ]
+then
+	sudo mkdir -p "/etc/post-update.d"
+fi
+sudo cp extras/waydroid-post-update.sh /etc/post-update.d
+sudo chown 0755 /etc/post-update.d/waydroid-post-update.sh
 
 # copy custom audio.rc patch to lower the audio latency
 sudo mkdir -p /var/lib/waydroid/overlay/system/etc/init
