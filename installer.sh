@@ -150,7 +150,7 @@ then
 	sudo mkdir -p "/etc/post-update.d"
 fi
 sudo cp extras/waydroid-post-update.sh /etc/post-update.d
-sudo chown 0755 /etc/post-update.d/waydroid-post-update.sh
+sudo chmod 0755 /etc/post-update.d/waydroid-post-update.sh
 
 # copy custom audio.rc patch to lower the audio latency
 sudo mkdir -p /var/lib/waydroid/overlay/system/etc/init
