@@ -2,14 +2,20 @@
 
 export SHORTCUT=${1}
 
-timeout 5s killall -15 cage -w &> /dev/null
-if [ $? -eq 124 ]; then
-    timeout 5s killall -2 cage -w &> /dev/null
-    if [ $? -eq 124 ]; then
-        timeout 5s killall -9 cage -w &> /dev/null
-    fi
-fi
+function kill_cage() {
+  while pgrep cage &> /dev/null; do
+      timeout 5s killall -15 cage -w &> /dev/null
+      if [ $? -eq 124 ]; then
+          timeout 5s killall -2 cage -w &> /dev/null
+          if [ $? -eq 124 ]; then
+              timeout 5s killall -9 cage -w &> /dev/null
+          fi
+          break
+      fi
+  done
+}
 
+kill_cage
 sudo /usr/bin/waydroid-container-stop
 sudo /usr/bin/waydroid-container-start
 
@@ -35,10 +41,7 @@ else
 		/usr/bin/waydroid show-full-ui $@ &'
 fi
 
-while [ -n "\$(pgrep cage)" ]
-do
-	sleep 1
-done
 
 # Get rid of stale processes.
 sudo kill $(ps -ef | grep [w]aydroid | awk '{print $2}')
+kill_cage

@@ -243,8 +243,9 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
     echo "  --version <version>    Specify the Android version to install. Supported versions:"
-    echo "                         - 13tv: Install Android 13 TV (No Google Apps, Optimized for media consumption)"
-    echo "                         - 13: Install Android 13 (No Google Apps, Standard Android)"
+    echo "                         - 13tv: Install Android 13 TV"
+    echo "                         - 13: Install Android 13"
+    echo "  --gapps                Install Google Apps"
     echo "  --debug                Enable debug output"
     echo "  --uninstall            Uninstall Waydroid"
     echo "  --help                 Show this help message"
@@ -379,15 +380,20 @@ uninstall_waydroid() {
 }
 
 # Parse command-line arguments
+INSTALL_GAPPS=0  # Default: Do not install Google Apps
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --version)
+        --install)
             if [[ -z "$2" ]]; then
-                echo "Error: --version requires an argument."
+                echo "Error: --install requires an argument."
                 usage
             fi
-            Choice="$2"
+            CHOICE="$2"
             shift 2
+            ;;
+        --gapps)
+            INSTALL_GAPPS=1
+            shift
             ;;
         --debug)
             DEBUG=1
@@ -399,46 +405,57 @@ while [[ $# -gt 0 ]]; do
         --help)
             usage
             ;;
-        *)
-            echo "Unknown option: $1"
-            usage
-            ;;
     esac
 done
 
 # Debug output for parsed arguments
-debug "Parsed arguments: Choice=$Choice, DEBUG=$DEBUG"
+debug "Parsed arguments: CHOICE=${CHOICE}, DEBUG=${DEBUG}, INSTALL_GAPPS=${INSTALL_GAPPS}"
 
 # If no command-line option is provided, use Zenity to display a selection menu
-if [[ -z "$Choice" ]]; then
+if [[ -z "${CHOICE}" ]]; then
     debug "No version specified, displaying selection menu."
-    Choice=$(zenity --width=600 --height=300 --list --radiolist \
+    CHOICE=$(zenity --width=600 --height=300 --list --radiolist \
         --title="Waydroid Installer" \
         --text="Select the version of Android you want to install:" \
         --column="Select" --column="Option" --column="Description" \
-        TRUE 13 "Install Android 13 (Base Android with No Google Apps)" \
-        FALSE 13tv "Install Android 13 TV (Android TV with No Google Apps)" \
+        TRUE 13 "Install Android 13 (Base Android with Google Apps)" \
+        FALSE 13tv "Install Android 13 TV (No Google Apps)" \
         FALSE EXIT "Exit the installer")
 
-    if [[ -z "$Choice" || "$Choice" == "EXIT" ]]; then
+    if [[ -z "${CHOICE}" || "${CHOICE}" == "EXIT" ]]; then
         echo "INFO: Exiting the installer."
         debug "User exited the installer."
         exit 0
     fi
+
+    if [ ! "${INSTALL_GAPPS}" -eq 1 ]; then
+      # Ask the user if they want to install Google Apps
+      INSTALL_GAPPS=$(zenity --width=400 --height=200 --list --radiolist \
+          --title="Google Apps Installation" \
+          --text="Do you want to install Google Apps (Chrome, Play, etc)?" \
+          --column="Select" --column="Option" \
+          FALSE "Yes" \
+          TRUE "No")
+
+      if [[ "${INSTALL_GAPPS}" == "Yes" ]]; then
+          INSTALL_GAPPS=1
+          echo "INFO: User chose to install Google Apps."
+          debug "User chose to install Google Apps."
+      fi
+    fi
 fi
 
-debug "Selected version: $Choice"
+debug "Selected version: ${CHOICE}"
 
-# sanity check - are you running this in Desktop Mode or ssh / virtual tty session?
+# Sanity check - are you running this in Desktop Mode or ssh / virtual tty session?
 xdpyinfo &> /dev/null
-if [ $? -eq 0 ]
-then
+if [ $? -eq 0 ]; then
     debug "Script is running in Desktop Mode."
-    echo Script is running in Desktop Mode.
+    echo "Script is running in Desktop Mode."
 else
     debug "Script is NOT running in Desktop Mode."
-     echo Script is NOT running in Desktop Mode.
-      echo Please run the script in Desktop Mode as mentioned in the README. Goodbye!
+    echo "Script is NOT running in Desktop Mode."
+    echo "Please run the script in Desktop Mode as mentioned in the README. Goodbye!"
     exit
 fi
 
@@ -594,7 +611,7 @@ chmod +x extras/nodataperm.sh
 sudo cp extras/nodataperm.sh /var/lib/waydroid/overlay/system/etc
 
 # Process the selected version
-case "$Choice" in
+case "$CHOICE" in
     13tv)
         echo "INFO: Installing Android 13 TV image..."
         debug "Installing Android 13 TV image."
@@ -625,8 +642,8 @@ case "$Choice" in
             "RQ3A.211001.001"
         ;;
     *)
-        echo "ERROR: Invalid version specified: ${Choice}"
-        debug "Invalid version specified: ${Choice}"
+        echo "ERROR: Invalid version specified: ${CHOICE}"
+        debug "Invalid version specified: ${CHOICE}"
         usage
         ;;
 esac
@@ -645,6 +662,14 @@ else
     echo "INFO: Config file missing. Proceeding with Waydroid configuration..."
     debug "Config file missing. Proceeding with Waydroid configuration."
 
+    # Determine if Google Apps should be installed
+    if [[ $INSTALL_GAPPS -eq 1 ]]; then
+        GAPPS_FLAG="-s GAPPS"
+        SNEK_APPS="gapps"
+        echo "INFO: Google Apps installation is enabled."
+        debug "Google Apps installation is enabled."
+    fi
+
     # Initialize Waydroid
     echo "INFO: Initializing Waydroid..."
     debug "Initializing Waydroid."
@@ -652,7 +677,7 @@ else
     sudo mkdir -p /var/lib/waydroid &> /dev/null
     sudo ln -s "${HOME}/waydroid/images" /var/lib/waydroid/images &> /dev/null
     sudo ln -s "${HOME}/waydroid/cache_http" /var/lib/waydroid/cache_http &> /dev/null
-    sudo waydroid init -s GAPPS
+    sudo waydroid init ${GAPPS_FLAG}
     if [ $? -eq 0 ]; then
         echo "INFO: Waydroid initialization completed successfully!"
         debug "Waydroid initialization completed successfully."
@@ -673,7 +698,7 @@ else
     cd "${DIR_CASUALSNEK}"
     python3 -m venv venv
     venv/bin/pip install -r requirements.txt &> /dev/null
-    sudo venv/bin/python3 main.py install {libndk,widevine}
+    sudo venv/bin/python3 main.py --android-version 13 install {libndk,widevine} ${SNEK_APPS} &> /dev/null
     if [ $? -eq 0 ]; then
         echo "INFO: Casualsnek script completed successfully!"
         debug "Casualsnek script completed successfully."
