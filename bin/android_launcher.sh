@@ -20,16 +20,25 @@ echo "Resolution: ${MY_RESOLUTION}"
 if [ -z "$1" ]
 then
 	# launch option not provided. launch Waydroid via cage and show the full ui right away
-	cage -- bash -c 'wlr-randr --output X11-1 --custom-mode $RESOLUTION@60Hz ; \
+	cage -- bash -c 'wlr-randr --output X11-1 --custom-mode $${MY_RESOLUTION}@60Hz ; \
 		/usr/bin/waydroid show-full-ui $@ & \
+		sleep 2 ; \
 		sudo /usr/bin/waydroid-startup-scripts'
 else
 	# launch option provided. launch Waydroid via cage but do not show full ui, launch the app from the arguments, then launch the full ui so it doesnt crash when exiting the app provided
-	cage -- env PACKAGE="$1" bash -c 'wlr-randr --output X11-1 --custom-mode $RESOLUTION@60Hz ; \
+	cage -- env PACKAGE="$1" bash -c 'wlr-randr --output X11-1 --custom-mode ${MY_RESOLUTION}@60Hz ; \
 		/usr/bin/waydroid session start $@ & \
 		sudo /usr/bin/waydroid-startup-scripts ; \
-		sleep 1 ; \
+		sleep 2 ; \
 		/usr/bin/waydroid app launch $PACKAGE & \
-		sleep 1 ; \
+		sleep 2 ; \
 		/usr/bin/waydroid show-full-ui $@ &'
 fi
+
+while [ -n "\$(pgrep cage)" ]
+do
+	sleep 1
+done
+
+# Get rid of stale processes.
+sudo kill $(ps -ef | grep [w]aydroid | awk '{print $2}')

@@ -240,13 +240,14 @@ configure_firewall () {
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 [--version androidtv|android] [--debug] [--uninstall]"
+    echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --version androidtv   Install Android TV"
-    echo "  --version android     Install Android"
-    echo "  --debug               Enable debug output"
-    echo "  --uninstall           Uninstall Waydroid"
-    echo "  --help                Show this help message"
+    echo "  --version <version>    Specify the Android version to install. Supported versions:"
+    echo "                         - 13tv: Install Android 13 TV (No Google Apps, Optimized for media consumption)"
+    echo "                         - 13: Install Android 13 (No Google Apps, Standard Android)"
+    echo "  --debug                Enable debug output"
+    echo "  --uninstall            Uninstall Waydroid"
+    echo "  --help                 Show this help message"
     exit 1
 }
 
@@ -415,8 +416,8 @@ if [[ -z "$Choice" ]]; then
         --title="Waydroid Installer" \
         --text="Select the version of Android you want to install:" \
         --column="Select" --column="Option" --column="Description" \
-        TRUE androidtv "Install Android TV (Optimized for media consumption)" \
-        FALSE android "Install Android (Standard Waydroid build)" \
+        TRUE 13 "Install Android 13 (Base Android with No Google Apps)" \
+        FALSE 13tv "Install Android 13 TV (Android TV with No Google Apps)" \
         FALSE EXIT "Exit the installer")
 
     if [[ -z "$Choice" || "$Choice" == "EXIT" ]]; then
@@ -426,7 +427,6 @@ if [[ -z "$Choice" ]]; then
     fi
 fi
 
-# Debug output for selected choice
 debug "Selected version: $Choice"
 
 # sanity check - are you running this in Desktop Mode or ssh / virtual tty session?
@@ -490,16 +490,30 @@ debug "Pacman keyring initialized successfully."
 # Install Waydroid and dependencies
 echo "INFO: Installing Waydroid and its dependencies. This may take a few minutes..."
 debug "Installing Waydroid and dependencies."
-sudo pacman -Sy --noconfirm --overwrite '*' fbset wlroots weston wlr-randr cage waydroid
-if [ $? -eq 0 ]; then
-    echo "INFO: Waydroid and its dependencies installed successfully!"
-    debug "Waydroid and dependencies installed successfully."
-    sudo systemctl disable waydroid-container.service
-else
-    echo "ERROR: Failed to install Waydroid and its dependencies. Please try running the script again."
-    debug "Failed to install Waydroid and dependencies."
-    cleanup_exit
-fi
+
+# List of required packages
+REQUIRED_PACKAGES=("fbset" "wlroots" "weston" "wlr-randr" "cage" "waydroid" "lzip")
+
+# Loop through each package and check if it is installed
+for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
+    if pacman -Q "$PACKAGE" &> /dev/null; then
+        echo "INFO: Package '$PACKAGE' is already installed. Skipping."
+        debug "Package '$PACKAGE' is already installed. Skipping."
+    else
+        echo "INFO: Installing package '$PACKAGE'..."
+        debug "Installing package '$PACKAGE'."
+        sudo pacman -S --noconfirm --overwrite '*' "$PACKAGE"
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to install package '$PACKAGE'. Please try running the script again."
+            debug "Failed to install package '$PACKAGE'."
+            cleanup_exit
+        fi
+    fi
+done
+
+echo "INFO: Waydroid and its dependencies installed successfully!"
+debug "Waydroid and dependencies installed successfully."
+sudo systemctl disable waydroid-container.service
 
 # Configure Waydroid services
 echo "INFO: Configuring Waydroid services and custom scripts..."
@@ -581,10 +595,10 @@ sudo cp extras/nodataperm.sh /var/lib/waydroid/overlay/system/etc
 
 # Process the selected version
 case "$Choice" in
-    androidtv)
-        echo "INFO: Installing Android TV image..."
-        debug "Installing Android TV image."
-        download_image "${ANDROID13_TV_IMG}" "${ANDROID13_TV_IMG_HASH}" "${HOME}/waydroid/custom/androidtv" "Android TV"
+    13tv)
+        echo "INFO: Installing Android 13 TV image..."
+        debug "Installing Android 13 TV image."
+        download_image "${ANDROID13_TV_IMG}" "${ANDROID13_TV_IMG_HASH}" "${HOME}/waydroid/custom/13tv" "Android 13 TV"
         initialize_waydroid
         sudo cp extras/ATV-Generic.kl /var/lib/waydroid/overlay/system/usr/keylayout/Generic.kl
         configure_waydroid_base_prop \
@@ -596,10 +610,10 @@ case "$Choice" in
             "TPM171E" \
             "NTG46"
         ;;
-    android)
-        echo "INFO: Installing Android image..."
-        debug "Installing Android image."
-        download_image "${ANDROID13_IMG}" "${ANDROID13_IMG_HASH}" "${HOME}/waydroid/custom/android" "Android"
+    13)
+        echo "INFO: Installing Android 13 image..."
+        debug "Installing Android 13 image."
+        download_image "${ANDROID13_IMG}" "${ANDROID13_IMG_HASH}" "${HOME}/waydroid/custom/13" "Android 13"
         initialize_waydroid
         configure_waydroid_base_prop \
             "11" \
@@ -632,8 +646,8 @@ else
     debug "Config file missing. Proceeding with Waydroid configuration."
 
     # Initialize Waydroid
-    echo "INFO: Initializing Waydroid with GAPPS..."
-    debug "Initializing Waydroid with GAPPS."
+    echo "INFO: Initializing Waydroid..."
+    debug "Initializing Waydroid."
     mkdir -p "${HOME}/waydroid/{images,cache_http}"
     sudo mkdir -p /var/lib/waydroid &> /dev/null
     sudo ln -s "${HOME}/waydroid/images" /var/lib/waydroid/images &> /dev/null
