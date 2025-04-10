@@ -1,6 +1,6 @@
-# SteamOS Android Waydroid Installer
+# SteamFork Android Waydroid Installer
 
-A collection of tools that is packaged into an easy-to-use script that is streamlined and tested to work with the Steam Deck running on SteamOS.
+A collection of tools that is packaged into an easy-to-use script that is streamlined and tested to work with the Steam Deck running on SteamFork.
 
 This project is a fork of [SteamOS-Waydroid-Installer by ryanrudolfoba](https://github.com/ryanrudolfoba/SteamOS-Waydroid-Installer), with additional features and improvements for enhanced functionality.
 
@@ -42,40 +42,6 @@ The `installer.sh` script now supports command-line options for selecting the An
 - `--version A13`: Installs standard Android 13.
 
 If no `--version` option is provided, the script will display a graphical menu to select the version interactively.
-
----
-
-## Building Custom Waydroid Images
-The repository includes a script, `build_waydroid_images.sh`, to build custom Waydroid-compatible LineageOS images. This script supports building both Android 13 and Android 13 TV images with ARM translation included.
-
-### Prerequisites:
-Ensure you have sufficient disk space (at least 100GB) and are running Arch Linux or a compatible distribution.
-
-### Usage:
-1. Make the script executable:
-   ```bash
-   chmod +x build_waydroid_images.sh
-   ```
-2. Run the script with the desired target:
-   - To build Android 13:
-     ```bash
-     ./build_waydroid_images.sh --target A13
-     ```
-   - To build Android 13 TV:
-     ```bash
-     ./build_waydroid_images.sh --target A13_TV
-     ```
-
-### Output:
-The built images will be located in:
-```bash
-~/waydroid-build/out/target/product/waydroid/
-```
-The output file will be named:
-- `lineage-waydroid-A13-YYYYMMDD.zip` for Android 13.
-- `lineage-waydroid-A13_TV-YYYYMMDD.zip` for Android 13 TV.
-
----
 
 ## Launching Waydroid
 1. Go to Game Mode.
