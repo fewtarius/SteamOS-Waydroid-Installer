@@ -519,7 +519,7 @@ for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
     else
         echo "INFO: Installing package '$PACKAGE'..."
         debug "Installing package '$PACKAGE'."
-        sudo pacman -S --noconfirm --overwrite '*' "$PACKAGE"
+        sudo pacman -Sy --noconfirm --overwrite '*' "$PACKAGE"
         if [ $? -ne 0 ]; then
             echo "ERROR: Failed to install package '$PACKAGE'. Please try running the script again."
             debug "Failed to install package '$PACKAGE'."
