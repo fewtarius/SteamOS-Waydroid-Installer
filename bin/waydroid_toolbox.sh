@@ -174,8 +174,15 @@ then
     # Stop Waydroid services and remove kernel modules
     sudo -S systemctl stop waydroid-container
     sudo -S rm /lib/modules/$(uname -r)/binder_linux.ko.zst
-    sudo -S pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc
-    
+
+    # List of required packages (consistent with the installer)
+    REQUIRED_PACKAGES=("fbset" "weston" "cage" "waydroid" "lzip")
+
+    # Uninstall the required packages
+    echo "INFO: Uninstalling required packages..."
+    debug "Uninstalling required packages: ${REQUIRED_PACKAGES[*]}"
+    sudo pacman -R --noconfirm "${REQUIRED_PACKAGES[@]}"
+
     # Delete Waydroid directories and config, excluding downloaded files
     echo "INFO: Preserving downloaded files in ${HOME}/waydroid/custom."
     sudo -S find "${HOME}/waydroid" -mindepth 1 -maxdepth 1 ! -name "custom" -exec rm -rf {} +
@@ -184,16 +191,13 @@ then
     # Delete Waydroid config and scripts
     sudo -S rm /etc/sudoers.d/zzzzzzzz-waydroid /etc/modules-load.d/waydroid.conf /usr/bin/waydroid-fix-controllers \
         /usr/bin/waydroid-container-stop /usr/bin/waydroid-container-start
-    
-    # Uninstall the packages
-    sudo pacman -R --noconfirm cage lxc waydroid
 
     # Delete Waydroid Toolbox launcher
-    rm ${HOME}/Desktop/"Waydroid Toolbox.desktop"
-    rm ${HOME}/Applications/Waydroid.desktop
+    rm "${HOME}/Desktop/Waydroid Toolbox.desktop"
+    rm "${HOME}/Applications/Waydroid.desktop"
     
     # Delete contents of ${ANDROID_HOME}
-    rm -rf ${ANDROID_HOME}/
+    rm -rf "${ANDROID_HOME}/"
 
     # Delete post-update hook
     sudo rm -f /etc/post-update.d/waydroid-post-update.sh

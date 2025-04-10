@@ -245,7 +245,6 @@ usage() {
     echo "  --version <version>    Specify the Android version to install. Supported versions:"
     echo "                         - 13tv: Install Android 13 TV"
     echo "                         - 13: Install Android 13"
-    echo "  --gapps                Install Google Apps"
     echo "  --debug                Enable debug output"
     echo "  --uninstall            Uninstall Waydroid"
     echo "  --help                 Show this help message"
@@ -355,7 +354,13 @@ uninstall_waydroid() {
     # Remove Waydroid-related files and configurations
     echo "INFO: Removing Waydroid-related files and configurations..."
     debug "Removing Waydroid files from ${HOME}/waydroid, ${HOME}/AUR, and other locations."
-    sudo pacman -R --noconfirm libglibutil libgbinder python-gbinder waydroid wlroots dnsmasq lxc cage &> /dev/null
+
+    # Uninstall required packages
+    echo "INFO: Uninstalling required packages..."
+    debug "Uninstalling required packages: ${REQUIRED_PACKAGES[*]}"
+    sudo pacman -R --noconfirm "${REQUIRED_PACKAGES[@]}" &> /dev/null
+
+    # Remove additional files and directories
     sudo rm -rf "${HOME}/waydroid" "${HOME}/AUR"
     sudo rm -f /etc/sudoers.d/zzzzzzzz-waydroid
     sudo rm -f /etc/modules-load.d/waydroid.conf
@@ -380,20 +385,15 @@ uninstall_waydroid() {
 }
 
 # Parse command-line arguments
-INSTALL_GAPPS=0  # Default: Do not install Google Apps
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --install)
+        --version)
             if [[ -z "$2" ]]; then
-                echo "Error: --install requires an argument."
+                echo "Error: --version requires an argument."
                 usage
             fi
             CHOICE="$2"
             shift 2
-            ;;
-        --gapps)
-            INSTALL_GAPPS=1
-            shift
             ;;
         --debug)
             DEBUG=1
@@ -409,7 +409,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Debug output for parsed arguments
-debug "Parsed arguments: CHOICE=${CHOICE}, DEBUG=${DEBUG}, INSTALL_GAPPS=${INSTALL_GAPPS}"
+debug "Parsed arguments: CHOICE=${CHOICE}, DEBUG=${DEBUG}"
 
 # If no command-line option is provided, use Zenity to display a selection menu
 if [[ -z "${CHOICE}" ]]; then
@@ -426,22 +426,6 @@ if [[ -z "${CHOICE}" ]]; then
         echo "INFO: Exiting the installer."
         debug "User exited the installer."
         exit 0
-    fi
-
-    if [ ! "${INSTALL_GAPPS}" -eq 1 ]; then
-      # Ask the user if they want to install Google Apps
-      INSTALL_GAPPS=$(zenity --width=400 --height=200 --list --radiolist \
-          --title="Google Apps Installation" \
-          --text="Do you want to install Google Apps (Chrome, Play, etc)?" \
-          --column="Select" --column="Option" \
-          FALSE "Yes" \
-          TRUE "No")
-
-      if [[ "${INSTALL_GAPPS}" == "Yes" ]]; then
-          INSTALL_GAPPS=1
-          echo "INFO: User chose to install Google Apps."
-          debug "User chose to install Google Apps."
-      fi
     fi
 fi
 
@@ -509,24 +493,37 @@ echo "INFO: Installing Waydroid and its dependencies. This may take a few minute
 debug "Installing Waydroid and dependencies."
 
 # List of required packages
-REQUIRED_PACKAGES=("fbset" "wlroots" "weston" "wlr-randr" "cage" "waydroid" "lzip")
+REQUIRED_PACKAGES=("fbset" "weston" "cage" "waydroid" "lzip")
 
-# Loop through each package and check if it is installed
+# Initialize an empty array for missing packages
+MISSING_PACKAGES=()
+
+# Check each package and add missing ones to the array
 for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
-    if pacman -Q "$PACKAGE" &> /dev/null; then
-        echo "INFO: Package '$PACKAGE' is already installed. Skipping."
-        debug "Package '$PACKAGE' is already installed. Skipping."
+    if pacman -Q "${PACKAGE}" &> /dev/null; then
+        echo "INFO: Package '${PACKAGE}' is already installed. Skipping."
+        debug "Package '${PACKAGE}' is already installed. Skipping."
     else
-        echo "INFO: Installing package '$PACKAGE'..."
-        debug "Installing package '$PACKAGE'."
-        sudo pacman -Sy --noconfirm --overwrite '*' "$PACKAGE"
-        if [ $? -ne 0 ]; then
-            echo "ERROR: Failed to install package '$PACKAGE'. Please try running the script again."
-            debug "Failed to install package '$PACKAGE'."
-            cleanup_exit
-        fi
+        echo "INFO: Package '${PACKAGE}' is not installed. Adding to the installation list."
+        debug "Package '${PACKAGE}' is not installed. Adding to the installation list."
+        MISSING_PACKAGES+=("${PACKAGE}")
     fi
 done
+
+# Install all missing packages in one command
+if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
+    echo "INFO: Installing missing packages: ${MISSING_PACKAGES[*]}"
+    debug "Installing missing packages: ${MISSING_PACKAGES[*]}"
+    sudo pacman -Sy --noconfirm --overwrite '*' "${MISSING_PACKAGES[@]}"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to install some packages. Please try running the script again."
+        debug "Failed to install some packages."
+        cleanup_exit
+    fi
+else
+    echo "INFO: All required packages are already installed."
+    debug "All required packages are already installed."
+fi
 
 echo "INFO: Waydroid and its dependencies installed successfully!"
 debug "Waydroid and dependencies installed successfully."
@@ -591,7 +588,7 @@ if [ ! -d "/etc/post-update.d" ]
 then
     sudo mkdir -p "/etc/post-update.d"
 fi
-sudo cp extras/waydroid-post-update.sh /etc/post-update.d
+sudo cp bin/waydroid-post-update.sh /etc/post-update.d
 sudo chmod 0755 /etc/post-update.d/waydroid-post-update.sh
 
 # copy custom audio.rc patch to lower the audio latency
@@ -662,14 +659,6 @@ else
     echo "INFO: Config file missing. Proceeding with Waydroid configuration..."
     debug "Config file missing. Proceeding with Waydroid configuration."
 
-    # Determine if Google Apps should be installed
-    if [[ $INSTALL_GAPPS -eq 1 ]]; then
-        GAPPS_FLAG="-s GAPPS"
-        SNEK_APPS="gapps"
-        echo "INFO: Google Apps installation is enabled."
-        debug "Google Apps installation is enabled."
-    fi
-
     # Initialize Waydroid
     echo "INFO: Initializing Waydroid..."
     debug "Initializing Waydroid."
@@ -677,7 +666,7 @@ else
     sudo mkdir -p /var/lib/waydroid &> /dev/null
     sudo ln -s "${HOME}/waydroid/images" /var/lib/waydroid/images &> /dev/null
     sudo ln -s "${HOME}/waydroid/cache_http" /var/lib/waydroid/cache_http &> /dev/null
-    sudo waydroid init ${GAPPS_FLAG}
+    sudo waydroid init -s GAPPS
     if [ $? -eq 0 ]; then
         echo "INFO: Waydroid initialization completed successfully!"
         debug "Waydroid initialization completed successfully."
@@ -698,7 +687,7 @@ else
     cd "${DIR_CASUALSNEK}"
     python3 -m venv venv
     venv/bin/pip install -r requirements.txt &> /dev/null
-    sudo venv/bin/python3 main.py --android-version 13 install {libndk,widevine} ${SNEK_APPS} &> /dev/null
+    sudo venv/bin/python3 main.py --android-version 13 install {libndk,widevine} &> /dev/null
     if [ $? -eq 0 ]; then
         echo "INFO: Casualsnek script completed successfully!"
         debug "Casualsnek script completed successfully."
