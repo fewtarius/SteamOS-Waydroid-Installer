@@ -418,8 +418,8 @@ if [[ -z "${CHOICE}" ]]; then
         --title="Waydroid Installer" \
         --text="Select the version of Android you want to install:" \
         --column="Select" --column="Option" --column="Description" \
-        TRUE 13 "Install Android 13 (Base Android with Google Apps)" \
-        FALSE 13tv "Install Android 13 TV (No Google Apps)" \
+        TRUE 13 "Install Android 13" \
+        FALSE 13tv "Install Android TV 13" \
         FALSE EXIT "Exit the installer")
 
     if [[ -z "${CHOICE}" || "${CHOICE}" == "EXIT" ]]; then
